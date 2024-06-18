@@ -10,7 +10,7 @@
 
 // fetch中封装了signal的事件监听，当在任意地方调用controller.abort()时，对应的请求就会取消
 
-import { Suspense, useState, use } from "react"
+import { Suspense, useState, use, useTransition } from "react"
 import './App.css'
 
 const postApi = (query: number) => {
@@ -35,31 +35,35 @@ export default function App() {
   const [api, setApi] = useState(postApi(0))  // 将postApi执行返回的promise作为返回结果存在state中
   const [query, setQuery] = useState(0)
 
+  const [isPending, startTransition] = useTransition()
+
   const inputChange = (e) => {  //* input输入时，取消上一次的请求，并发送新的请求
     const newQuery = e.target.value
     setQuery(newQuery)
 
-    api.cancel()
-    setApi(postApi(newQuery))
+    startTransition(() => {
+      api.cancel()
+      setApi(postApi(newQuery))
+    })
   }
 
   return (
     <>
       <input type="text" placeholder="search by number" onChange={inputChange} />
       <Suspense fallback={<div>loading...</div>}>
-        <List api={api} />
+        <List api={api} isPending={isPending}/>
       </Suspense>
     </>
   )
 }
 
-const List = ({ api }) => {
+const List = ({ api,isPending }) => {
   const posts = use(api)
 
   return (
     <ul>
       {posts.map((post) => (
-        <div key={post.id}>
+        <div key={post.id} style={{opacity:isPending?0.5:1}}>
           <h2>{post.title}</h2>
           <p>postId: {post.postId}</p>
           <p>id: {post.id}</p>
