@@ -1,5 +1,5 @@
 import Card from './Card.tsx'
-import Setting from './Setting.tsx'
+import Setting from './Setting.jsx'
 import Provider from './context.tsx'
 import './App.css'
 
